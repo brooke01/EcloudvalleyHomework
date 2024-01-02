@@ -13,6 +13,7 @@ the content of the appsettings.json file is below.
 ```
 
 一、DataBase prepare
+
 I use the SQL Server as my database to local develop program.
 About the script for create database and table, see below.
 ```sql
