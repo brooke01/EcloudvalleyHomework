@@ -110,10 +110,10 @@ namespace EcloudvalleyHomework.Controllers
 
                 var originData = _context.UsageReports
                     .Where(u => u.UsageAccountId == usageAccountId &&
-                    (u.UsageStartDate.Date >= startDate.Value.Date && u.UsageStartDate.Date <= endDate.Value.Date
-                    || u.UsageEndDate.Date >= startDate.Value.Date && u.UsageEndDate.Date <= endDate.Value.Date)
+                        (u.UsageStartDate.Date >= startDate.Value.Date && u.UsageStartDate.Date <= endDate.Value.Date
+                        || u.UsageEndDate.Date >= startDate.Value.Date && u.UsageEndDate.Date <= endDate.Value.Date)
                     )
-                    .Select(x => new UsageReportItem
+                    .Select(x => new UsageReportItemDto
                     {
                         ProductName = x.ProductName,
                         UsageStartDate = x.UsageStartDate,
