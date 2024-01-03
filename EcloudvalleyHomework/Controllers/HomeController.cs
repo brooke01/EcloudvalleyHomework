@@ -33,20 +33,21 @@ namespace EcloudvalleyHomework.Controllers
                 if (ValidateFileExtention(file.FileName) == false) return BadRequest("僅允許上傳 .csv 檔案");
 
                 DataTable dtCsvData = new DataTable();
+                dtCsvData.Columns.Add("usage_report_id", typeof(int));
+                dtCsvData.Columns.Add("payer_account_id", typeof(decimal));
+                dtCsvData.Columns.Add("unblended_cost", typeof(decimal));
+                dtCsvData.Columns.Add("unblended_rate", typeof(decimal));
+                dtCsvData.Columns.Add("usage_account_id", typeof(decimal));
+                dtCsvData.Columns.Add("usage_amount", typeof(decimal));
+                dtCsvData.Columns.Add("usage_start_date", typeof(DateTime));
+                dtCsvData.Columns.Add("usage_end_date", typeof(DateTime));
+                dtCsvData.Columns.Add("product_name", typeof(string));
+
                 using (var reader = new StreamReader(file.OpenReadStream()))
                 using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
                 {
                     csv.Context.RegisterClassMap<CsvDtoMap>();
                     var records = csv.GetRecords<CsvDto>().ToList();
-                    dtCsvData.Columns.Add("usage_report_id", typeof(int));
-                    dtCsvData.Columns.Add("payer_account_id", typeof(decimal));
-                    dtCsvData.Columns.Add("unblended_cost", typeof(decimal));
-                    dtCsvData.Columns.Add("unblended_rate", typeof(decimal));
-                    dtCsvData.Columns.Add("usage_account_id", typeof(decimal));
-                    dtCsvData.Columns.Add("usage_amount", typeof(decimal));
-                    dtCsvData.Columns.Add("usage_start_date", typeof(DateTime));
-                    dtCsvData.Columns.Add("usage_end_date", typeof(DateTime));
-                    dtCsvData.Columns.Add("product_name", typeof(string));
 
                     records.ForEach(x =>
                     {
