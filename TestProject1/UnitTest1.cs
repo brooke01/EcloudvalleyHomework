@@ -19,16 +19,13 @@ namespace TestProject1
             var homeController = new HomeController(configuration, context);
 
             // Act
-            var expect = await homeController.UsageAmount(147878817734, new DateTime(2020, 04, 01), new DateTime(2020, 04, 02)) as OkObjectResult;
+            var expect = await homeController.UsageAmount(147878817734, new DateTime(2020, 04, 01), new DateTime(2020, 04, 10)) as OkObjectResult;
             var expectValue = (Dictionary<string, Dictionary<string, decimal>>)expect.Value;
-            var result = await homeController.UsageAmount(147878817734, new DateTime(2020, 04, 01), new DateTime(2020, 04, 02)) as OkObjectResult;
+            var result = await homeController.UsageAmount(147878817734, new DateTime(2020, 04, 01), 1, 10) as OkObjectResult;
             var resultValue = (Dictionary<string, Dictionary<string, decimal>>)result.Value;
 
             // Assert
             Assert.Equal(expectValue, resultValue);
-
-            // Assert
-            //expectValue.Should().BeEquivalentTo(resultValue, options => options.ExcludingMissingMembers());
         }
     }
 }
