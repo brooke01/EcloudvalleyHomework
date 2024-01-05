@@ -52,9 +52,9 @@ We have three apis for use.
     | url          | /Data    |
     | http method  | Post     |
 
-    request multipart/form-data:
-
-        file : {$binary}
+    | field | data type | required | description                                                               |
+    | ----- | --------- | -------- | ------------------------------------------------------------------------- |
+    | file  | binary    | true     | request with multipart/form-data method, and import data from *.csv file. |
 
     response:
     ```json
@@ -70,9 +70,9 @@ We have three apis for use.
     | url          | /UnblendedCost/{usageAccountId} |
     | http method  | Get                             |
 
-    request route value:
-
-        usageAccountId : {number}
+    | field          | data type | required | description                            |
+    | -------------- | --------- | -------- | -------------------------------------- |
+    | usageAccountId | number    | true     |                                        |
 
     response:
     ```json
@@ -84,21 +84,47 @@ We have three apis for use.
 
 3. The api for giving a usageAccountId to get the daily of product of usage amount.
 
-    | item         | content                                                                   |
-    | ------------ | ------------------------------------------------------------------------- |
-    | url          | /UsageAmount/{usageAccountId}?StartDate={2020-04-01}&EndDate={2020-05-01} |
-    | http method  | Get                                                                       |
+    | item         | content                                                               |
+    | ------------ | --------------------------------------------------------------------- |
+    | url          | /UsageAmount/{usageAccountId}?StartDate={StartDate}&EndDate={EndDate} |
+    | http method  | Get                                                                   |
 
-    request route value and query string:
-
-        usageAccountId : {number}
-
-        StartDate : {Date} (optional)
-
-        EndDate : {Date} (optional)
+    | field          | data type | required | description                                           |
+    | -------------- | --------- | -------- | ----------------------------------------------------- |
+    | usageAccountId | number    | true     |                                                       |
+    | StartDate      | date      | false    | Determine which started date to query. ex: 2020-04-01 |
+    | EndDate        | date      | false    | Determine which ended date to query. ex: 2020-05-01   |
 
     notice: the query range for date at most 30 days.
 
+    response:
+    ```json
+    {
+        "productname_A": {
+            "2023/01/01": 123,
+            "2023/01/02": 123
+        },
+        "productname_B": {
+            "2023/01/01": 123,
+            "2023/01/02": 123
+        }
+    }
+    ```
+
+4. The api for giving a usageAccountId to get the daily of product of usage amount.
+
+    | item         | content                                                                                                    |
+    | ------------ | ---------------------------------------------------------------------------------------------------------- |
+    | url          | /UsageAmount_V2/{usageAccountId}?queryStartDate={queryStartDate}&pageIndex={pageIndex}&pageSize={pageSize} |
+    | http method  | Get                                                                                                        |
+
+    | field          | data type | required | description                                                     |
+    | -------------- | --------- | -------- | --------------------------------------------------------------- |
+    | usageAccountId | number    | true     |                                                                 |
+    | queryStartDate | date      | false    | Determine which started date to query. ex: 2020-04-01           |
+    | pageIndex      | number    | false    | The one-based index of the currently displayed page of product. |
+    | pageSize       | number    | false    | The data quantity of per page displayed of product.             |
+ 
     response:
     ```json
     {

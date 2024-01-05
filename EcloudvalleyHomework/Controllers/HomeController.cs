@@ -147,6 +147,47 @@ namespace EcloudvalleyHomework.Controllers
             }
         }
 
+        [HttpGet("UsageAmount_V2/{usageAccountId}")]
+        public async Task<IActionResult> UsageAmount(decimal usageAccountId, DateTime? queryStartDate, int pageIndex = 1, int pageSize = 10)
+        {
+            const int PRECISION = 9;
+            try
+            {
+                queryStartDate = queryStartDate ?? (DateTime?)System.Data.SqlTypes.SqlDateTime.MinValue;
+
+                var originData = _context.UsageReports
+                    .Where(x => x.UsageAccountId == usageAccountId && x.UsageStartDate >= queryStartDate.Value.Date)
+                    .Select(x => new UsageReportItemDto
+                    {
+                        ProductName = x.ProductName,
+                        UsageStartDate = x.UsageStartDate,
+                        UsageEndDate = x.UsageEndDate,
+                        DailyUsageAmount = Math.Round(x.UsageAmount / ((x.UsageEndDate.Date - x.UsageStartDate.Date).Days + 1), PRECISION)
+                    });
+
+                List<UsageAmountDto> result = new List<UsageAmountDto>();
+                await originData.GroupBy(x => x.ProductName).Select(x => x.Key).ForEachAsync(productName =>
+                {
+                    Dictionary<string, decimal> dailyUsageAmounts = new();
+                    for (int i = 0; i < pageSize; i++)
+                    {
+                        var day = queryStartDate.Value.AddDays(i + (pageIndex - 1) * pageSize);
+                        var amount = originData.AsEnumerable()
+                                               .Where(x => x.ProductName == productName && x.UsageStartDate.Date <= day.Date && day.Date <= x.UsageEndDate.Date)
+                                               .Sum(x => x.DailyUsageAmount);
+                        dailyUsageAmounts.Add(day.ToString("yyyy/MM/dd"), amount);
+                    }
+                    result.Add(new UsageAmountDto { ProductName = productName, DailyUsageAmounts = dailyUsageAmounts });
+                });
+
+                return Ok(result.ToDictionary(x => x.ProductName, x => x.DailyUsageAmounts));
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Internal server error: {ex.Message}");
+            }
+        }
+
         private bool ValidateFileExtention(string fileName)
         {
             var allowedExtensions = new[] { ".csv" }; // 允許的檔案擴展名
