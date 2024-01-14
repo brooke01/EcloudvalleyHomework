@@ -188,11 +188,54 @@ namespace EcloudvalleyHomework.Controllers
             }
         }
 
+        [HttpGet("UsageAmount_V3/{usageAccountId}")]
+        public async Task<IActionResult> UsageAmount(decimal usageAccountId, DateTime? startDate, DateTime? endDate, int pageIndex = 1, int pageSize = 10)
+        {
+            const int PRECISION = 9;
+            try
+            {
+                if (!startDate.HasValue || !endDate.HasValue) return BadRequest("startDate 與 endDate 不為空");
+
+                var result = _context.UsageReports.Where(x => x.UsageAccountId == usageAccountId
+                && (startDate.Value.Date <= x.UsageStartDate.Date && x.UsageStartDate.Date <= endDate.Value.Date
+                    || startDate.Value.Date <= x.UsageEndDate.Date && x.UsageEndDate.Date <= endDate.Value.Date)
+                ).AsEnumerable()
+                .SelectMany(x => GetDate(startDate.Value, endDate.Value, pageIndex, pageSize).Select(date =>
+                {
+                    return new UsageReportItemWithDateDto
+                    {
+                        ProductName = x.ProductName,
+                        Date = date.ToString("yyyy/MM/dd"),
+                        DailyUsageAmount = x.UsageStartDate.Date <= date.Date && date.Date <= x.UsageEndDate.Date ? Math.Round(x.UsageAmount / ((x.UsageEndDate.Date - x.UsageStartDate.Date).Days + 1), PRECISION) : 0
+                    };
+                }))
+                .GroupBy(x => new { x.ProductName })
+                .Select(x =>
+                new UsageAmountResDto
+                {
+                    ProductName = x.Key.ProductName,
+                    UsageAmountDetail = x.GroupBy(x => new { x.Date }).Select(x => new UsageAmountDetailDto { Daily = x.Key.Date, Amount = x.Sum(x => x.DailyUsageAmount) })
+                });
+
+                return Ok(result.ToDictionary(x => x.ProductName, x => x.UsageAmountDetail.ToDictionary(x => x.Daily, x => x.Amount)));
+            }
+            catch (Exception ex)
+            {
+                return Problem($"Internal server error: {ex.Message}");
+            }
+        }
+
         private bool ValidateFileExtention(string fileName)
         {
             var allowedExtensions = new[] { ".csv" }; // 允許的檔案擴展名
             var fileExtension = Path.GetExtension(fileName).ToLower();
             return allowedExtensions.Contains(fileExtension);
         }
+
+        private IEnumerable<DateTime> GetDate(DateTime startDate, DateTime endDate, int pageIndex, int pageSize)
+        {
+            return Enumerable.Range(0, (endDate - startDate).Days + 1).Select(x => startDate.AddDays(x)).Skip(pageIndex - 1).Take(pageSize);
+        }
+
     }
 }
